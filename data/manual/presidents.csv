@@ -1,13 +1,13 @@
-year,president,pres_party,gallup_approval
-1978,Carter,D,49
-1982,Reagan,R,42
-1986,Reagan,R,63
-1990,G.H.W. Bush,R,58
-1994,Clinton,D,46
-1998,Clinton,D,66
-2002,G.W. Bush,R,63
-2006,G.W. Bush,R,38
-2010,Obama,D,45
-2014,Obama,D,41
-2018,Trump,R,40
-2022,Biden,D,41
+year,president,pres_party,election_day
+1978,Carter,D,1978-11-07
+1982,Reagan,R,1982-11-02
+1986,Reagan,R,1986-11-04
+1990,G.H.W. Bush,R,1990-11-06
+1994,Clinton,D,1994-11-08
+1998,Clinton,D,1998-11-03
+2002,G.W. Bush,R,2002-11-05
+2006,G.W. Bush,R,2006-11-07
+2010,Obama,D,2010-11-02
+2014,Obama,D,2014-11-04
+2018,Trump,R,2018-11-06
+2022,Biden,D,2022-11-08

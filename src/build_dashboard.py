@@ -15,8 +15,8 @@ REPORTS = ROOT / "reports"
 def main() -> None:
     template = (DASH / "template.html").read_text(encoding="utf-8")
     data = json.loads((DASH / "data.json").read_text(encoding="utf-8"))
-    for key, name in [("forecast", "forecast_2026.json"), ("score", "score_2026.json")]:
-        path = REPORTS / name
+    for key, path in [("forecast", REPORTS / "forecast_2026.json"), ("score", REPORTS / "score_2026.json"),
+                      ("approval", DASH / "approval.json")]:
         data[key] = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
     html = template.replace("/*__DATA__*/null", json.dumps(data))
     (DASH / "index.html").write_text(html, encoding="utf-8")

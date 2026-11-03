@@ -252,6 +252,24 @@ def interpret(nat_models, nat_extra, state_models) -> str:
     def eff(c, size=20):
         return f"{c['b'] * size:+.2f} pts per {size}% rise (p = {c['p']:.2f})"
 
+    monthly = ""
+    apath = DASH / "approval.json"
+    if apath.exists():
+        ar = json.loads(apath.read_text(encoding="utf-8"))["results"]
+        L2, med, irf1 = ar["levels"]["L2"], ar["mediation"], ar["irf"][1]
+        monthly = f"""
+6. **Monthly data confirm the gas → approval link** (see [approval_gas.md](approval_gas.md)).
+   Across {ar['n_months']} months of Gallup polls, a 10% real gas rise goes with
+   {L2['b']:+.1f} approval points (p < 0.001), holding unemployment, inflation and time in office
+   fixed and comparing each president with himself. Approval drops within a month
+   ({irf1['b']:+.1f} pts, p = {irf1['p']:.3f}). Independents react most
+   ({ar['party']['ind']['b']:+.1f}) and the president's own party least ({ar['party']['own']['b']:+.1f}).
+7. **Total effect on midterms.** A 20% gas rise costs about {abs(med['indirect']):.1f} pts of swing
+   *through approval* (SE {med['indirect_se']:.2f}). The direct coefficient ({med['direct']:+.2f}) offsets
+   it, so the estimated total is {med['total']:+.2f} pts (SE {med['total_se']:.2f}). The indirect path
+   rests on ~570 months of data. The direct one rests on 12 elections and depends on 2022.
+"""
+
     return f"""## Key findings
 
 **Short answer: no. In 1978–2022, rising gas prices did not reliably cost the president's
@@ -282,12 +300,12 @@ does not show up in the data once you look carefully.
    {eff(s4)}. Without 2022: {eff(s6)}. None of these show a penalty. Power is limited, because
    gas prices move mostly nationally (crude oil is a global market). Within one year, state
    gas changes differ by only about 2–5 percentage points.
-
-**Interview-ready takeaway:** gas prices are the most visible price in the economy, but there is
-no robust evidence they directly decide midterms. Any effect probably runs through presidential
-approval, and with only 12 midterms the national data cannot separate gas from everything else
-going on in a given year. Spotting the bad-control issue and the 2022 sensitivity is the kind of
-critical thinking analyst interviews look for.
+{monthly}
+**Interview-ready takeaway:** gas prices clearly hurt presidential approval, and approval
+clearly drives midterms. But the gas effect is modest: a 20% spike costs a president about
+4 approval points, worth well under 1 point of House vote. That's small next to everything
+else that moves approval. Gas is one input to how voters judge the president, not a separate
+force that decides midterms on its own.
 """
 
 

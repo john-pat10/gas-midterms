@@ -97,6 +97,12 @@ section { display: grid; gap: 16px; min-width: 0; }
 .coef .rowlbl { fill: var(--fg); font-family: var(--font-body); font-size: 12px; }
 .coef .grp { fill: var(--muted); font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.06em; }
 
+.chain { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; }
+.link { flex: 1 1 150px; min-width: 0; display: grid; gap: 2px; align-content: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; }
+.link .v { font-family: var(--font-data); font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.link .k { font-size: 0.82rem; color: var(--muted); }
+.link.total { border-color: var(--fg); border-width: 1.5px; }
+.arrow { align-self: center; color: var(--faint); font-family: var(--font-data); }
 .fcgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .findings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .finding { display: grid; gap: 6px; padding-top: 12px; border-top: 2px solid var(--fg); }
@@ -131,7 +137,7 @@ a { color: var(--dem); }
     <div class="eyebrow">U.S. House midterms · 1978–2022 · 50 states</div>
     <h1>Do high gas prices sink the president's party?</h1>
     <div class="verdict">Short answer: <b>not reliably.</b></div>
-    <p class="lead">Rising gas prices are often blamed for midterm losses. Across 12 midterms and 584 state results, the gas price change explains almost none of the swing against the president's party. Presidential approval explains far more.</p>
+    <p class="lead">Rising gas prices are often blamed for midterm losses. Across 12 midterms and 584 state results, the gas price change explains almost none of the swing against the president's party. Gas prices do pull down presidential approval, which matters, but the effect on the vote is small.</p>
   </header>
 
   <div class="stats" id="stats"></div>
@@ -191,6 +197,36 @@ a { color: var(--dem); }
     </div>
   </section>
 
+  <section aria-labelledby="h-appr" id="sAppr" hidden>
+    <div style="display:grid;gap:6px">
+      <h2 id="h-appr">Where gas prices do bite: presidential approval</h2>
+      <p class="muted" id="apLead"></p>
+    </div>
+    <div class="panel">
+      <h3>Gallup approval <span class="muted" style="font-weight:400">(%, monthly)</span></h3>
+      <svg class="chart" id="apApproval" viewBox="0 0 900 180" role="img" aria-label="Monthly presidential approval 1977 to 2024"></svg>
+      <h3>Real price of regular gasoline <span class="muted" style="font-weight:400">($ per gallon, 2024 dollars)</span></h3>
+      <svg class="chart" id="apGas" viewBox="0 0 900 150" role="img" aria-label="Monthly real gas price 1977 to 2024"></svg>
+    </div>
+    <div class="two">
+      <div class="panel">
+        <h3>How fast approval reacts to a lasting 10% gas rise</h3>
+        <svg class="chart" id="apIrf" viewBox="0 0 460 260" role="img" aria-label="Cumulative approval response by month"></svg>
+        <p class="caption">Cumulative change in approval, month-to-month model with 12 lags. Shaded band = 95% confidence interval. The drop comes fast and fades over about a year.</p>
+      </div>
+      <div class="panel">
+        <h3>Who reacts most</h3>
+        <svg class="chart" id="apParty" viewBox="0 0 460 200" role="img" aria-label="Approval effect by party"></svg>
+        <p class="caption">Approval change for a 10% real gas rise among each group, with 95% confidence intervals. Independents, the voters who decide midterms, react most.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Following the chain to the midterm <span class="muted" style="font-weight:400">(for a 20% real gas rise)</span></h3>
+      <div class="chain" id="apChain"></div>
+      <p class="caption" id="apChainNote"></p>
+    </div>
+  </section>
+
   <section aria-labelledby="h-state">
     <div style="display:grid;gap:6px">
       <h2 id="h-state">Inside one midterm: did harder-hit states swing harder?</h2>
@@ -226,7 +262,7 @@ a { color: var(--dem); }
     <h2 id="h-find">What it means</h2>
     <div class="findings">
       <div class="finding"><h3>Approval carries the signal</h3><p>Gallup approval before the vote explains about a third of the swing across midterms. Gas prices explain about 3%.</p></div>
-      <div class="finding"><h3>Gas may act through approval</h3><p>A 10% real gas rise goes with about 1.5 fewer approval points (p ≈ 0.09). Any gas effect probably runs through how voters rate the president.</p></div>
+      <div class="finding"><h3>Gas acts through approval</h3><p>Across 574 months of Gallup polls, a 10% real gas rise costs a president about 2 approval points, and independents react most. That path is worth roughly 0.7 points of House vote for a 20% spike.</p></div>
       <div class="finding"><h3>Watch the bad control</h3><p>Holding approval fixed, gas turns slightly positive. That is a classic artifact of controlling for a mediator, and it fades once 2022 (the year of the <i>Dobbs</i> ruling) is dropped.</p></div>
       <div class="finding"><h3>Twelve points is not much</h3><p>Gas prices move mostly together nationwide, so states differ by only a few points within a year. The data cannot rule out a modest effect. They do rule out a large, consistent one.</p></div>
     </div>
@@ -569,6 +605,105 @@ function drawState() {
   } else {
     $("#fcNotes").textContent = F.warnings.join(" ");
   }
+})();
+
+/* ---------- gas -> approval ---------- */
+(function approvalSection() {
+  const AP = DATA.approval;
+  if (!AP) return;
+  $("#sAppr").hidden = false;
+  const R = AP.results, L2 = R.levels.L2, M = R.mediation, ser = AP.series;
+  $("#apLead").innerHTML = `Midterms come only every four years, but Gallup polled approval every month. Across <span class="num">${R.n_months}</span> months from Carter to Biden, comparing each president with himself and holding unemployment and inflation fixed, a 10% rise in real gas prices goes with <span class="num">${fmt(L2.b, 1, true)}</span> approval points (p < 0.001).`;
+
+  // stacked monthly small multiples with shared crosshair
+  const W = 900, m = { t: 10, r: 12, b: 24, l: 44 };
+  const t0 = ser[0].month, ts = ser.map(d => { const [y, mo] = d.month.split("-").map(Number); return y + (mo - 1) / 12; });
+  const x = scale(ts[0], ts[ts.length - 1], m.l, W - m.r);
+  function panel(id, H, key, lo, hi, ticks, colorFn, fmtv, breakOnPresident = true) {
+    const svg = $(id), y = scale(lo, hi, H - m.b, m.t);
+    ticks.forEach(v => { el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: "gridline" }, svg);
+      el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = fmtv(v); });
+    for (let yr = 1980; yr <= 2024; yr += 4) el("text", { x: x(yr), y: H - 6, "text-anchor": "middle" }, svg).textContent = yr;
+    // one path segment per president so lines break at transitions
+    let seg = [], prev = null;
+    const flush = () => { if (seg.length > 1) el("path", { d: "M" + seg.map(p => p.join(",")).join("L"), fill: "none", stroke: colorFn(prev), "stroke-width": 2, "stroke-linejoin": "round" }, svg); seg = []; };
+    ser.forEach((d, i) => {
+      if (prev && ((breakOnPresident && d.president !== prev.president) || d[key] == null)) flush();
+      if (d[key] != null) seg.push([x(ts[i]).toFixed(1), y(d[key]).toFixed(1)]);
+      prev = d;
+    });
+    flush();
+    const cross = el("line", { y1: m.t, y2: H - m.b, stroke: "var(--faint)", "stroke-width": 1, opacity: 0 }, svg);
+    const dot = el("circle", { r: 4, fill: "var(--fg)", opacity: 0 }, svg);
+    const hit = el("rect", { x: m.l, y: 0, width: W - m.l - m.r, height: H, class: "hit" }, svg);
+    return { svg, y, cross, dot, hit, key };
+  }
+  const pA = panel("#apApproval", 180, "approve", 20, 90, [20, 40, 60, 80], d => partyColor(d.pres_party), v => v);
+  const pG = panel("#apGas", 150, "real_gas", 1.5, 5.5, [2, 3, 4, 5], () => "var(--fuel)", v => "$" + v, false);
+  const panels = [pA, pG];
+  function hover(e, svg) {
+    const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const tv = x.inv(loc.x);
+    let i = ts.findIndex(t => t >= tv); if (i < 0) i = ts.length - 1;
+    const d = ser[i];
+    panels.forEach(p => {
+      p.cross.setAttribute("x1", x(ts[i])); p.cross.setAttribute("x2", x(ts[i])); p.cross.setAttribute("opacity", 1);
+      if (d[p.key] != null) { p.dot.setAttribute("cx", x(ts[i])); p.dot.setAttribute("cy", p.y(d[p.key])); p.dot.setAttribute("opacity", 1); }
+    });
+    showTip(e, `<b>${d.month} · ${d.president}</b>` + row("Approval", d.approve != null ? d.approve.toFixed(0) + "%" : "–") +
+      row("Real gas", "$" + d.real_gas.toFixed(2)) + row("Unemployment", d.unemp != null ? d.unemp.toFixed(1) + "%" : "–") +
+      row("Inflation", d.inflation != null ? d.inflation.toFixed(1) + "%" : "–"));
+  }
+  panels.forEach(p => {
+    p.hit.addEventListener("pointermove", (e) => hover(e, p.svg));
+    p.hit.addEventListener("pointerleave", () => { hideTip(); panels.forEach(q => { q.cross.setAttribute("opacity", 0); q.dot.setAttribute("opacity", 0); }); });
+  });
+
+  // impulse response
+  (function irf() {
+    const svg = $("#apIrf"), W = 460, H = 260, mm = { t: 14, r: 14, b: 44, l: 44 };
+    const lo = Math.min(...R.irf.map(d => d.b - 1.96 * d.se)), hi = Math.max(...R.irf.map(d => d.b + 1.96 * d.se));
+    const yr = niceTicks(lo, Math.max(hi, 0.5), 5);
+    const xx = scale(0, 12, mm.l, W - mm.r), y = scale(yr.lo, yr.hi, H - mm.b, mm.t);
+    axes(svg, xx, y, [0, 3, 6, 9, 12], yr.ticks, W, H, mm, "Months after the gas price rise", "Approval change (pts)");
+    const band = R.irf.map(d => [xx(d.month), y(d.b + 1.96 * d.se)]).concat(R.irf.slice().reverse().map(d => [xx(d.month), y(d.b - 1.96 * d.se)]));
+    el("path", { d: "M" + band.map(p => p.join(",")).join("L") + "Z", fill: "var(--fuel)", opacity: 0.16 }, svg);
+    el("path", { d: "M" + R.irf.map(d => [xx(d.month), y(d.b)].join(",")).join("L"), fill: "none", stroke: "var(--fuel)", "stroke-width": 2 }, svg);
+    R.irf.forEach(d => {
+      el("circle", { cx: xx(d.month), cy: y(d.b), r: 4, fill: "var(--fuel)", class: "dot" }, svg);
+      const hit = el("circle", { cx: xx(d.month), cy: y(d.b), r: 14, class: "hit" }, svg);
+      hit.addEventListener("pointermove", (e) => showTip(e, `<b>Month ${d.month}</b>` + row("Approval", fmt(d.b, 2, true) + " pts") +
+        row("95% CI", `${fmt(d.b - 1.96 * d.se, 1)} to ${fmt(d.b + 1.96 * d.se, 1)}`) + row("p-value", d.p.toFixed(3))));
+      hit.addEventListener("pointerleave", hideTip);
+    });
+  })();
+
+  // party bars (dot + CI)
+  (function party() {
+    const svg = $("#apParty"), W = 460, H = 200, mm = { t: 10, r: 20, b: 40, l: 150 };
+    const rows = [["President's own party", R.party.own], ["Independents", R.party.ind], ["Opposition party", R.party.opp]];
+    const xx = scale(-4, 0.5, mm.l, W - mm.r), rh = (H - mm.t - mm.b) / rows.length;
+    [-4, -3, -2, -1, 0].forEach(v => { el("line", { x1: xx(v), x2: xx(v), y1: mm.t, y2: H - mm.b, class: v === 0 ? "zero" : "gridline" }, svg);
+      el("text", { x: xx(v), y: H - mm.b + 18, "text-anchor": "middle" }, svg).textContent = fmt(v, 0); });
+    el("text", { x: (mm.l + W - mm.r) / 2, y: H - 4, "text-anchor": "middle", class: "axis-title" }, svg).textContent = "Approval pts per 10% gas rise";
+    rows.forEach(([name, e], i) => {
+      const cy = mm.t + rh * i + rh / 2;
+      el("text", { x: 0, y: cy + 4, style: "fill:var(--fg);font-family:var(--font-body);font-size:12.5px" }, svg).textContent = name;
+      el("line", { x1: xx(e.b - 1.96 * e.se), x2: xx(e.b + 1.96 * e.se), y1: cy, y2: cy, stroke: "var(--fg)", "stroke-width": 2, "stroke-linecap": "round" }, svg);
+      el("circle", { cx: xx(e.b), cy, r: 6, fill: "var(--fuel)", class: "dot" }, svg);
+      el("text", { x: xx(e.b), y: cy - 11, "text-anchor": "middle", class: "lbl" }, svg).textContent = fmt(e.b, 1, true);
+    });
+  })();
+
+  const box = (v, k, cls = "") => `<div class="link ${cls}"><span class="v">${v}</span><span class="k">${k}</span></div>`;
+  $("#apChain").innerHTML =
+    box("+20%", "real gas price rise over two years") + `<span class="arrow" aria-hidden="true">→</span>` +
+    box(fmt(M.approval_per_20pct, 1, true), "approval points (monthly data, 574 months)") + `<span class="arrow" aria-hidden="true">→</span>` +
+    box(fmt(M.indirect, 2, true), `swing pts through approval (± ${(1.96 * M.indirect_se).toFixed(2)})`) + `<span class="arrow" aria-hidden="true">+</span>` +
+    box(fmt(M.direct, 2, true), "swing pts direct (12 midterms, fragile)") + `<span class="arrow" aria-hidden="true">=</span>` +
+    box(fmt(M.total, 2, true), "total swing pts", "total");
+  $("#apChainNote").textContent = `The approval path is solid: it rests on ~570 months of data and its 95% range excludes zero. The "direct" piece comes from only 12 elections and is mostly 2022. Read the result this way: a 20% gas spike costs a president about ${Math.abs(M.approval_per_20pct).toFixed(0)} approval points, worth roughly ${Math.abs(M.indirect).toFixed(1)} points of House vote. That's real, but small next to the typical midterm loss of about 3 points.`;
 })();
 
 /* ---------- table ---------- */

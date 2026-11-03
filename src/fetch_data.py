@@ -152,7 +152,39 @@ def fetch_bls() -> None:
     pd.DataFrame(rows).to_csv(out, index=False)
 
 
+APPROVAL_PAGES = {
+    "Carter": "jimmy-carter-public-approval",
+    "Reagan": "ronald-reagan-public-approval",
+    "G.H.W. Bush": "george-bush-public-approval",
+    "Clinton": "william-j-clinton-public-approval",
+    "G.W. Bush": "george-w-bush-public-approval",
+    "Obama": "barack-obama-public-approval",
+    "Trump 1": "donald-j-trump-public-approval",
+    "Biden": "joseph-r-biden-public-approval",
+    "Trump 2": "donald-j-trump-2nd-term-public-approval",
+}
+
+
+def fetch_approval() -> None:
+    """Every Gallup presidential approval poll, Carter through Dec 2025 (when Gallup
+    ended the series), from the UCSB American Presidency Project."""
+    out = RAW / "gallup_approval_polls.csv"
+    if out.exists():
+        return
+    print("Gallup approval polls (UCSB American Presidency Project)...")
+    frames = []
+    for president, slug in APPROVAL_PAGES.items():
+        r = _get(f"https://www.presidency.ucsb.edu/statistics/data/{slug}")
+        table = max(pd.read_html(io.StringIO(r.text)), key=len)
+        table.insert(0, "president", president)
+        frames.append(table)
+        print(f"  {president}: {len(table)} polls")
+        time.sleep(1)
+    pd.concat(frames).to_csv(out, index=False)
+
+
 def main() -> None:
+    fetch_approval()
     fetch_seds()
     fetch_mer()
     fetch_bea_income()

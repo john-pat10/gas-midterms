@@ -70,6 +70,46 @@ def load_house() -> pd.DataFrame:
     return df
 
 
+def load_approval_polls() -> pd.DataFrame:
+    """All Gallup approval polls, with column names unified across the UCSB pages."""
+    raw = pd.read_csv(RAW / "gallup_approval_polls.csv")
+
+    def first(*cols):
+        out = pd.Series(np.nan, index=raw.index, dtype="object")
+        for c in cols:
+            if c in raw:
+                out = out.fillna(raw[c])
+        return out
+
+    start = pd.to_datetime(first("Start Date", "Start date", "Start Date.1"), format="mixed", errors="coerce")
+    end = pd.to_datetime(first("End Date", "End Date.1"), format="mixed", errors="coerce")
+    # Source typo fix: e.g. one Biden poll's end date reads "2/20/224". When the year is
+    # implausible, take it from the poll's start date.
+    bad = end.dt.year < 1900
+    end[bad] = [e.replace(year=s.year) for e, s in zip(end[bad], start[bad])]
+    df = pd.DataFrame({
+        "president": raw["president"],
+        "end": end,
+        "approve": pd.to_numeric(raw["Approving"], errors="coerce"),
+        "dem": pd.to_numeric(first("Democrats Approving", "Democratic Approval", "Democrats", "Democrats Opproving"), errors="coerce"),
+        "ind": pd.to_numeric(first("Independents Approving", "Independent Approval", "Independents"), errors="coerce"),
+        "rep": pd.to_numeric(first("Republicans Approving", "Republican Approval", "Republicans"), errors="coerce"),
+        "source": raw["Source"].fillna("gallup").str.lower() if "Source" in raw else "gallup",
+    })
+    return df.dropna(subset=["end", "approve"]).sort_values("end").reset_index(drop=True)
+
+
+def midterm_approval(pres: pd.DataFrame) -> pd.Series:
+    """Last Gallup approval reading before each Election Day."""
+    polls = load_approval_polls()
+    polls = polls[polls["source"] == "gallup"]
+    out = {}
+    for _, p in pres.iterrows():
+        before = polls[polls["end"] < pd.Timestamp(p["election_day"])]
+        out[p["year"]] = before.iloc[-1]["approve"]
+    return pd.Series(out)
+
+
 def load_cpi() -> pd.DataFrame:
     bls = pd.read_csv(RAW / "bls_series.csv")
     cpi = bls[bls["series_id"] == "CUUR0000SA0"][["year", "month", "value"]].rename(columns={"value": "cpi"})
@@ -253,6 +293,7 @@ def build_state_panel(dist: pd.DataFrame, pres: pd.DataFrame, national: pd.DataF
 
 def main() -> None:
     pres = pd.read_csv(MANUAL / "presidents.csv")
+    pres["gallup_approval"] = pres["year"].map(midterm_approval(pres))
     house = load_house()
     dist = district_results(house)
 
