@@ -37,6 +37,34 @@ a gas spike and the *Dobbs* ruling.
 Full regression tables: [`reports/results.md`](reports/results.md) (midterms) and
 [`reports/approval_gas.md`](reports/approval_gas.md) (monthly approval).
 
+## Covariance: the three links, by hand
+
+A plainer look at the same chain using covariance,
+cov(X, Y) = Σ(x − x̄)(y − ȳ) / (n − 1), computed step by step in
+[`src/covariance.py`](src/covariance.py) and checked against numpy.
+
+| Pair | n | Covariance | Correlation (r) |
+|---|---|---|---|
+| Real gas price vs approval (monthly) | 574 | −4.86 | −0.49 |
+| Approval vs midterm swing | 12 | +13.71 | +0.59 |
+| Gas % change (2y) vs midterm swing | 12 | +9.72 | +0.16 |
+
+![covariance pairs](reports/figures/covariance_pairs.png)
+
+- **Gas and approval move in opposite directions.** Months with above-average gas prices
+  tend to have below-average approval.
+- **Approval and swing move together.** Popular presidents lose fewer House votes. 1998 and
+  2002 contribute the largest positive products (about +58 each).
+- **Gas and swing look positive, but one year drives it.** 2022 alone contributes +87.7 of
+  the 106.9 sum of products. Without 2022 the covariance is close to zero.
+- **Covariances can't be compared across pairs.** Pairs 2 and 3 have similar covariances but
+  very different correlations, because gas % change is spread far more widely (−34 to +62)
+  than approval. Correlation divides out each variable's standard deviation, so it has no
+  units and can be compared.
+
+Caveat: pair 1 uses gas price *levels*, so part of the relationship reflects which
+president was in office when gas was expensive. The regressions above control for that.
+
 ## 2026 forecast
 
 Made the night before the Nov 3, 2026 election and saved with a timestamp in
@@ -60,6 +88,7 @@ host it on GitHub Pages. It includes:
 src/fetch_data.py          download raw data (EIA, BLS, BEA, MIT Election Lab, Gallup via UCSB)
 src/build_dataset.py       clean + merge -> data/processed/{national,state_panel}.csv
 src/approval_analysis.py   monthly gas -> approval models + mediation -> reports/approval_gas.md
+src/covariance.py          by-hand covariance/correlation for the three pairs + figure
 src/analysis.py            midterm regressions, figures, reports/results.md
 src/forecast_2026.py       pre-election 2026 forecast
 src/score_2026.py          score the forecast against results
