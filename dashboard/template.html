@@ -1,0 +1,586 @@
+<title>Gas Prices &amp; Midterms</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one 1080px reading column; findings first, then evidence charts, each section a band with chart + controls above it. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --fg: #151a21;
+  --muted: #5a6371;
+  --faint: #8a93a0;
+  --grid: #e2e6eb;
+  --line: #cfd5dc;
+  --dem: #2f6fd0;
+  --rep: #d0453b;
+  --fuel: #b86e0a;
+  --fuel-soft: #f6e3c4;
+  --gain: #1b8576;
+  --loss: #c4602a;
+  --mid: #e6e8eb;
+  --chip: #e9edf1;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --surface: #171b21; --fg: #e8ebef; --muted: #a0a9b4; --faint: #737d89;
+    --grid: #262c34; --line: #343b45; --dem: #5b93e8; --rep: #de5a50; --fuel: #e9a33f;
+    --fuel-soft: #3a2c16; --gain: #3db3a0; --loss: #e4844c; --mid: #2b3139; --chip: #222830;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --surface: #171b21; --fg: #e8ebef; --muted: #a0a9b4; --faint: #737d89;
+  --grid: #262c34; --line: #343b45; --dem: #5b93e8; --rep: #de5a50; --fuel: #e9a33f;
+  --fuel-soft: #3a2c16; --gain: #3db3a0; --loss: #e4844c; --mid: #2b3139; --chip: #222830;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 64px; display: grid; gap: 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; font-weight: 700; }
+h2 { font-size: 1.55rem; font-weight: 600; line-height: 1.15; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--font-data); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+header { display: grid; gap: 16px; }
+.lead { font-size: 1.12rem; color: var(--fg); }
+.verdict { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; padding: 6px 12px; border: 1.5px solid var(--fuel); color: var(--fg); border-radius: 4px; width: fit-content; }
+.verdict b { color: var(--fuel); font-weight: 700; }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.stat { background: var(--surface); padding: 16px 18px; display: grid; gap: 4px; align-content: start; }
+.stat .v { font-family: var(--font-data); font-size: 1.7rem; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .k { font-size: 0.85rem; color: var(--muted); }
+.pump { display: inline-flex; align-items: flex-start; }
+.pump sup { font-size: 0.55em; margin-left: 1px; margin-top: 0.15em; }
+
+section { display: grid; gap: 16px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.controls .label { font-size: 0.8rem; color: var(--muted); margin-right: 4px; }
+.chip { font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; border: 1px solid transparent; background: var(--chip); color: var(--fg); cursor: pointer; }
+.chip:hover { border-color: var(--line); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
+.chip:focus-visible, select:focus-visible { outline: 2px solid var(--fuel); outline-offset: 2px; }
+.yearchip { font-family: var(--font-data); font-size: 0.78rem; padding: 4px 9px; }
+
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { fill: var(--muted); font-family: var(--font-data); font-size: 11px; }
+.chart .axis-title { fill: var(--muted); font-family: var(--font-body); font-size: 12px; }
+.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+.chart .zero { stroke: var(--faint); stroke-width: 1; }
+.chart .fit { stroke: var(--faint); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+.chart .dot { stroke: var(--surface); stroke-width: 2; }
+.chart .lbl { fill: var(--fg); font-size: 10.5px; }
+.chart .hit { fill: transparent; cursor: pointer; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.ramp { width: 120px; height: 10px; border-radius: 2px; display: inline-block; }
+
+.two { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; }
+.caption { font-size: 0.86rem; color: var(--muted); }
+
+.tile rect { stroke: var(--surface); stroke-width: 2; }
+.tile text { font-family: var(--font-data); font-size: 10px; text-anchor: middle; pointer-events: none; }
+
+.coef .rowlbl { fill: var(--fg); font-family: var(--font-body); font-size: 12px; }
+.coef .grp { fill: var(--muted); font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.06em; }
+
+.fcgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.findings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.finding { display: grid; gap: 6px; padding-top: 12px; border-top: 2px solid var(--fg); }
+.finding p { font-size: 0.95rem; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; min-width: 640px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+th { font-weight: 600; color: var(--muted); font-size: 0.78rem; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+td { font-family: var(--font-data); }
+td:nth-child(2) { font-family: var(--font-body); }
+details summary { cursor: pointer; font-weight: 600; font-family: var(--font-display); font-size: 1.05rem; }
+details[open] summary { margin-bottom: 12px; }
+.method { display: grid; gap: 10px; font-size: 0.92rem; }
+.method ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; max-width: 72ch; }
+a { color: var(--dem); }
+
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--fg); color: var(--surface); font-size: 0.8rem; line-height: 1.4; padding: 8px 10px; border-radius: 4px; max-width: 240px; opacity: 0; transition: opacity 0.08s; }
+#tip b { font-family: var(--font-display); font-size: 0.92rem; }
+#tip .r { display: flex; justify-content: space-between; gap: 14px; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 760px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .two, .findings, .fcgrid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">U.S. House midterms · 1978–2022 · 50 states</div>
+    <h1>Do high gas prices sink the president's party?</h1>
+    <div class="verdict">Short answer: <b>not reliably.</b></div>
+    <p class="lead">Rising gas prices are often blamed for midterm losses. Across 12 midterms and 584 state results, the gas price change explains almost none of the swing against the president's party. Presidential approval explains far more.</p>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <section aria-labelledby="h-2026" id="s2026" hidden>
+    <div style="display:grid;gap:6px">
+      <div class="eyebrow" id="fcStamp"></div>
+      <h2 id="h-2026">2026: the model's call</h2>
+      <p class="muted" id="fcLead"></p>
+    </div>
+    <div class="panel">
+      <div class="fcgrid">
+        <div style="display:grid;gap:8px;min-width:0">
+          <h3>Republican House vote swing vs. 2024 <span class="muted" style="font-weight:400">(points, 80% range)</span></h3>
+          <svg class="chart" id="fcSwing" viewBox="0 0 560 170" role="img" aria-label="Forecast swing ranges"></svg>
+        </div>
+        <div style="display:grid;gap:8px;min-width:0">
+          <h3>Republican seats <span class="muted" style="font-weight:400">(80% range, 218 = majority)</span></h3>
+          <svg class="chart" id="fcSeats" viewBox="0 0 560 170" role="img" aria-label="Forecast seat range"></svg>
+        </div>
+      </div>
+      <div class="legend">
+        <span><svg width="26" height="12" aria-hidden="true"><line x1="2" y1="6" x2="24" y2="6" stroke="var(--rep)" stroke-width="6" stroke-linecap="round" opacity=".35"></line><circle cx="13" cy="6" r="4.5" fill="var(--rep)"></circle></svg>Forecast and 80% range</span>
+        <span><svg width="14" height="14" aria-hidden="true"><path d="M7 1 L13 7 L7 13 L1 7 Z" fill="var(--fg)"></path></svg><span id="fcActualLbl">Actual result (added after the votes are counted)</span></span>
+      </div>
+      <p class="caption" id="fcNotes"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-nat">
+    <div style="display:grid;gap:6px">
+      <h2 id="h-nat">Each midterm, one point</h2>
+      <p class="muted">The vertical axis is the change in the president's party's share of the two-party House vote, compared with the presidential election two years earlier. Pick a variable for the horizontal axis to see which one tracks the swing.</p>
+    </div>
+    <div class="panel">
+      <div class="controls" id="xvar" role="group" aria-label="Horizontal axis variable"><span class="label">Compare swing with</span></div>
+      <svg class="chart" id="natScatter" viewBox="0 0 900 400" role="img" aria-label="Scatter of midterm swing against the selected variable"></svg>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--dem)"></i>Democratic president</span>
+        <span><i class="sw" style="background:var(--rep)"></i>Republican president</span>
+        <span><svg width="22" height="8" aria-hidden="true"><line x1="0" y1="4" x2="22" y2="4" stroke="var(--faint)" stroke-width="2" stroke-dasharray="5 4"></line></svg>Least-squares fit</span>
+        <span id="natR" class="num"></span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-time">
+    <div style="display:grid;gap:6px">
+      <h2 id="h-time">Gas shocks and swings, year by year</h2>
+      <p class="muted">The two biggest gas spikes, 1990 and 2022, brought some of the mildest losses. The worst losses, in 1994 and 2010, came with gas prices falling.</p>
+    </div>
+    <div class="panel">
+      <h3>President's party House swing <span class="muted" style="font-weight:400">(points)</span></h3>
+      <svg class="chart" id="tSwing" viewBox="0 0 900 190" role="img" aria-label="Bar chart of swing by midterm"></svg>
+      <h3>Real gas price change over the prior two years <span class="muted" style="font-weight:400">(%)</span></h3>
+      <svg class="chart" id="tGas" viewBox="0 0 900 190" role="img" aria-label="Bar chart of gas price change by midterm"></svg>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-state">
+    <div style="display:grid;gap:6px">
+      <h2 id="h-state">Inside one midterm: did harder-hit states swing harder?</h2>
+      <p class="muted">Within a single election, every state faces the same president and the same national mood. If gas prices mattered on their own, states where gas rose more than the national average should have swung harder against the president.</p>
+    </div>
+    <div class="panel">
+      <div class="controls" id="years" role="group" aria-label="Midterm year"><span class="label">Midterm</span></div>
+      <div class="controls" id="metric" role="group" aria-label="Map color"><span class="label">Color states by</span></div>
+      <div class="two">
+        <div style="display:grid;gap:10px;min-width:0">
+          <svg class="chart" id="map" viewBox="0 0 550 410" role="img" aria-label="Tile map of states"></svg>
+          <div class="legend" id="mapLegend"></div>
+        </div>
+        <div style="display:grid;gap:10px;min-width:0;align-content:start">
+          <svg class="chart" id="stScatter" viewBox="0 0 460 380" role="img" aria-label="State gas change against state swing"></svg>
+          <p class="caption" id="stCaption"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-coef">
+    <div style="display:grid;gap:6px">
+      <h2 id="h-coef">Every model, one number</h2>
+      <p class="muted">Estimated change in the president's party's swing for a 20% rise in real gas prices, with 95% confidence intervals. Below zero means gas prices hurt the president's party. No specification shows that clearly.</p>
+    </div>
+    <div class="panel">
+      <svg class="chart coef" id="coef" viewBox="0 0 900 470" role="img" aria-label="Coefficient plot of gas effect across models"></svg>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-find">
+    <h2 id="h-find">What it means</h2>
+    <div class="findings">
+      <div class="finding"><h3>Approval carries the signal</h3><p>Gallup approval before the vote explains about a third of the swing across midterms. Gas prices explain about 3%.</p></div>
+      <div class="finding"><h3>Gas may act through approval</h3><p>A 10% real gas rise goes with about 1.5 fewer approval points (p ≈ 0.09). Any gas effect probably runs through how voters rate the president.</p></div>
+      <div class="finding"><h3>Watch the bad control</h3><p>Holding approval fixed, gas turns slightly positive. That is a classic artifact of controlling for a mediator, and it fades once 2022 (the year of the <i>Dobbs</i> ruling) is dropped.</p></div>
+      <div class="finding"><h3>Twelve points is not much</h3><p>Gas prices move mostly together nationwide, so states differ by only a few points within a year. The data cannot rule out a modest effect. They do rule out a large, consistent one.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="panel">
+      <details>
+        <summary>The data, midterm by midterm</summary>
+        <div class="tablewrap"><table id="natTable"></table></div>
+      </details>
+    </div>
+    <div class="panel method">
+      <h3>Method and sources</h3>
+      <ul>
+        <li><b>Swing:</b> change in the president's party's two-party House vote, midterm vs. prior presidential year, counting only districts with both a Democrat and a Republican on the ballot. Source: MIT Election Data + Science Lab, U.S. House 1976–2024.</li>
+        <li><b>Gas prices:</b> national monthly unleaded regular from the EIA Monthly Energy Review (October values). State annual motor gasoline prices from the EIA State Energy Data System. All prices deflated to 2024 dollars with CPI-U.</li>
+        <li><b>Controls:</b> CPI inflation and state unemployment (BLS), real per-capita income (BEA), refiner crude oil cost (EIA), Gallup approval before each midterm.</li>
+        <li><b>Models:</b> OLS with robust standard errors for the 12 national points. State models are weighted by number of districts, with errors clustered by year (pooled) or by state (fixed effects).</li>
+      </ul>
+    </div>
+  </section>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const NS = "http://www.w3.org/2000/svg";
+const $ = (s) => document.querySelector(s);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = (v, d = 1, sign = false) => v == null || isNaN(v) ? "–" : (sign && v > 0 ? "+" : "") + v.toFixed(d).replace("-", "−");
+
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function scale(d0, d1, r0, r1) { const f = (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0); f.inv = (p) => d0 + (p - r0) / (r1 - r0) * (d1 - d0); return f; }
+function niceTicks(lo, hi, n = 6) {
+  const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6));
+  return { ticks: out, lo: Math.floor(lo / step) * step, hi: Math.ceil(hi / step) * step };
+}
+function fit(xs, ys, ws) {
+  ws = ws || xs.map(() => 1);
+  let sw = 0, sx = 0, sy = 0; xs.forEach((x, i) => { sw += ws[i]; sx += ws[i] * x; sy += ws[i] * ys[i]; });
+  const mx = sx / sw, my = sy / sw; let num = 0, den = 0, syy = 0;
+  xs.forEach((x, i) => { num += ws[i] * (x - mx) * (ys[i] - my); den += ws[i] * (x - mx) ** 2; syy += ws[i] * (ys[i] - my) ** 2; });
+  const b = num / den; return { b, a: my - b * mx, r: num / Math.sqrt(den * syy) };
+}
+
+const tip = $("#tip");
+function showTip(evt, html) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + w > innerWidth - 8) x = evt.clientX - w - pad;
+  if (y + h > innerHeight - 8) y = evt.clientY - h - pad;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+function hideTip() { tip.style.opacity = 0; }
+const row = (k, v) => `<div class="r"><span>${k}</span><span>${v}</span></div>`;
+
+const NAT = DATA.national;
+const partyColor = (p) => p === "D" ? "var(--dem)" : "var(--rep)";
+
+/* ---------- stats ---------- */
+(function stats() {
+  const c = DATA.correlations, y22 = NAT.find(d => d.year === 2022);
+  const cents = Math.round(y22.gas_price_oct * 100) / 100;
+  $("#stats").innerHTML = `
+    <div class="stat"><span class="v">r = ${fmt(c.gas_chg_2y, 2)}</span><span class="k">Gas price change vs. swing (12 midterms)</span></div>
+    <div class="stat"><span class="v">r = ${fmt(c.approval, 2)}</span><span class="k">Presidential approval vs. swing</span></div>
+    <div class="stat"><span class="v pump">$${cents.toFixed(2)}<sup>9</sup></span><span class="k">Regular, Oct 2022: +${Math.round(y22.gas_chg_2y)}% real in 2 years. Swing: ${fmt(y22.swing, 1, true)} pts</span></div>
+    <div class="stat"><span class="v">${DATA.panel.filter(d => d.swing != null).length}</span><span class="k">State-by-midterm results in the panel</span></div>`;
+})();
+
+/* ---------- national scatter ---------- */
+const XVARS = [
+  ["gas_chg_2y", "Gas, 2-yr change", "Real gas price change, 2 years (%)"],
+  ["gas_chg_1y", "Gas, 1-yr change", "Real gas price change, 1 year (%)"],
+  ["approval", "Approval", "Gallup presidential approval (%)"],
+  ["inflation_1y", "Inflation", "CPI inflation, 12 months (%)"],
+  ["unemp_chg_2y", "Unemployment", "Change in unemployment rate, 2 years (pts)"],
+  ["crude_chg_2y", "Crude oil", "Real crude oil cost change, 2 years (%)"],
+];
+let xvar = "gas_chg_2y";
+function chipGroup(host, items, current, onPick, cls = "") {
+  items.forEach(([key, label]) => {
+    const b = document.createElement("button");
+    b.className = "chip " + cls; b.textContent = label; b.type = "button"; b.id = `${host.id}-${key}`;
+    b.setAttribute("aria-pressed", key === current);
+    b.onclick = () => { host.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); onPick(key); };
+    host.appendChild(b);
+  });
+}
+chipGroup($("#xvar"), XVARS, xvar, (k) => { xvar = k; drawNat(); });
+
+function axes(svg, x, y, xt, yt, W, H, m, xTitle, yTitle) {
+  yt.forEach(v => { el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v === 0 ? "zero" : "gridline" }, svg);
+    el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = fmt(v, Math.abs(v) < 10 && v % 1 ? 1 : 0); });
+  xt.forEach(v => { if (v === 0) el("line", { x1: x(v), x2: x(v), y1: m.t, y2: H - m.b, class: "zero" }, svg);
+    el("text", { x: x(v), y: H - m.b + 18, "text-anchor": "middle" }, svg).textContent = fmt(v, 0); });
+  if (xTitle) el("text", { x: (m.l + W - m.r) / 2, y: H - 4, "text-anchor": "middle", class: "axis-title" }, svg).textContent = xTitle;
+  if (yTitle) el("text", { x: 14, y: (m.t + H - m.b) / 2, "text-anchor": "middle", class: "axis-title", transform: `rotate(-90 14 ${(m.t + H - m.b) / 2})` }, svg).textContent = yTitle;
+}
+
+function drawNat() {
+  const svg = $("#natScatter"); svg.innerHTML = "";
+  const W = 900, H = 400, m = { t: 16, r: 24, b: 48, l: 56 };
+  const meta = XVARS.find(v => v[0] === xvar);
+  const xs = NAT.map(d => d[xvar]), ys = NAT.map(d => d.swing);
+  const xr = niceTicks(Math.min(...xs), Math.max(...xs)), yr = niceTicks(Math.min(...ys, -6.5), Math.max(...ys, 2.5), 5);
+  const x = scale(xr.lo, xr.hi, m.l, W - m.r), y = scale(yr.lo, yr.hi, H - m.b, m.t);
+  axes(svg, x, y, xr.ticks, yr.ticks, W, H, m, meta[2], "Swing (pts)");
+  const f = fit(xs, ys);
+  el("line", { x1: x(xr.lo), y1: y(f.a + f.b * xr.lo), x2: x(xr.hi), y2: y(f.a + f.b * xr.hi), class: "fit" }, svg);
+  NAT.forEach(d => {
+    const cx = x(d[xvar]), cy = y(d.swing);
+    el("circle", { cx, cy, r: 7, fill: partyColor(d.pres_party), class: "dot" }, svg);
+    // Pick the label side with the fewest neighbors nearby so labels don't collide.
+    const near = NAT.filter(o => o !== d).map(o => ({ dx: x(o[xvar]) - cx, dy: y(o.swing) - cy }));
+    const crowd = (sx, sy) => near.filter(o => Math.abs(o.dx - sx) < 70 && Math.abs(o.dy - sy) < 12).length;
+    const opts = [["start", 11, 4], ["end", -11, 4], ["start", 9, -10], ["start", 9, 17]]
+      .filter(([a, dx]) => a === "end" ? cx - 130 > m.l : cx + 130 < W - m.r || dx < 0)
+      .map(([a, dx, dy]) => ({ a, dx, dy, score: crowd(a === "start" ? dx + 50 : dx - 50, dy) }));
+    const best = opts.sort((p, q) => p.score - q.score)[0] || { a: "end", dx: -11, dy: 4 };
+    el("text", { x: cx + best.dx, y: cy + best.dy, "text-anchor": best.a, class: "lbl" }, svg).textContent = `${d.year} ${d.president}`;
+    const hit = el("circle", { cx, cy, r: 16, class: "hit" }, svg);
+    hit.addEventListener("pointermove", (e) => showTip(e, `<b>${d.year} · ${d.president} (${d.pres_party})</b>` +
+      row("Swing", fmt(d.swing, 1, true) + " pts") + row("Seats", (d.seat_change > 0 ? "+" : "") + d.seat_change) +
+      row("Gas, 2 yr", fmt(d.gas_chg_2y, 0, true) + "%") + row("Approval", d.approval + "%") +
+      row("Inflation", fmt(d.inflation_1y, 1) + "%") + row("Pump, Oct", "$" + d.gas_price_oct.toFixed(2))));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+  $("#natR").textContent = `r = ${fmt(f.r, 2)} · r² = ${Math.round(f.r * f.r * 100)}%`;
+}
+
+/* ---------- timeline small multiples ---------- */
+function bars(svgId, key, colorFn, unit, domainPad) {
+  const svg = $(svgId); svg.innerHTML = "";
+  const W = 900, H = 190, m = { t: 10, r: 12, b: 26, l: 48 };
+  const vals = NAT.map(d => d[key]);
+  const yr = niceTicks(Math.min(0, ...vals) - domainPad, Math.max(0, ...vals) + domainPad, 4);
+  const y = scale(yr.lo, yr.hi, H - m.b, m.t);
+  const bw = (W - m.l - m.r) / NAT.length;
+  yr.ticks.forEach(v => { el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v === 0 ? "zero" : "gridline" }, svg);
+    el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = fmt(v, 0); });
+  NAT.forEach((d, i) => {
+    const cx = m.l + bw * i + bw / 2, w = Math.min(34, bw - 10), v = d[key];
+    const top = y(Math.max(0, v)), bot = y(Math.min(0, v)), h = Math.max(1, bot - top), r = Math.min(4, h);
+    // rounded data-end, square baseline
+    const xL = cx - w / 2, xR = cx + w / 2;
+    const path = v >= 0
+      ? `M${xL},${bot} V${top + r} Q${xL},${top} ${xL + r},${top} H${xR - r} Q${xR},${top} ${xR},${top + r} V${bot} Z`
+      : `M${xL},${top} V${bot - r} Q${xL},${bot} ${xL + r},${bot} H${xR - r} Q${xR},${bot} ${xR},${bot - r} V${top} Z`;
+    el("path", { d: path, fill: colorFn(d) }, svg);
+    el("text", { x: cx, y: H - 6, "text-anchor": "middle" }, svg).textContent = d.year;
+    const hit = el("rect", { x: m.l + bw * i, y: m.t, width: bw, height: H - m.t - m.b, class: "hit" }, svg);
+    hit.addEventListener("pointermove", (e) => showTip(e, `<b>${d.year} · ${d.president}</b>` +
+      row("Swing", fmt(d.swing, 1, true) + " pts") + row("Gas, 2 yr", fmt(d.gas_chg_2y, 0, true) + "%") + row("Approval", d.approval + "%")));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+}
+bars("#tSwing", "swing", (d) => partyColor(d.pres_party), "pts", 0.5);
+bars("#tGas", "gas_chg_2y", () => "var(--fuel)", "%", 5);
+
+/* ---------- state map + within-year scatter ---------- */
+const TILES = { AK:[0,0], ME:[10,0], VT:[9,1], NH:[10,1],
+  WA:[0,2], ID:[1,2], MT:[2,2], ND:[3,2], MN:[4,2], IL:[5,2], WI:[6,2], MI:[7,2], NY:[8,2], RI:[9,2], MA:[10,2],
+  OR:[0,3], NV:[1,3], WY:[2,3], SD:[3,3], IA:[4,3], IN:[5,3], OH:[6,3], PA:[7,3], NJ:[8,3], CT:[9,3],
+  CA:[0,4], UT:[1,4], CO:[2,4], NE:[3,4], MO:[4,4], KY:[5,4], WV:[6,4], VA:[7,4], MD:[8,4], DE:[9,4],
+  AZ:[1,5], NM:[2,5], KS:[3,5], AR:[4,5], TN:[5,5], NC:[6,5], SC:[7,5],
+  OK:[3,6], LA:[4,6], MS:[5,6], AL:[6,6], GA:[7,6], HI:[0,7], TX:[3,7], FL:[8,7] };
+const YEARS = NAT.map(d => d.year);
+let year = 2022, metric = "swing";
+chipGroup($("#years"), YEARS.map(y => [y, String(y)]), year, (k) => { year = +k; drawState(); }, "yearchip");
+chipGroup($("#metric"), [["swing", "Swing vs. president"], ["gas", "Gas price change"]], metric, (k) => { metric = k; drawState(); });
+
+function mix(a, b, t) {
+  const p = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const A = p(a), B = p(b); return "rgb(" + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(",") + ")";
+}
+function drawState() {
+  const rows = DATA.panel.filter(d => d.year === year);
+  const byS = Object.fromEntries(rows.map(d => [d.state, d]));
+  const nat = NAT.find(d => d.year === year);
+  const svg = $("#map"); svg.innerHTML = "";
+  const S = 48, G = 2, ox = 8, oy = 8;
+  const gain = css("--gain"), loss = css("--loss"), mid = css("--mid"), fuel = css("--fuel"), soft = css("--fuel-soft"), surface = css("--surface");
+  const gasVals = rows.map(d => d.gas_chg_2y).filter(v => v != null);
+  const gLo = Math.min(...gasVals), gHi = Math.max(...gasVals);
+  const color = (d) => {
+    if (!d) return mid;
+    if (metric === "swing") {
+      if (d.swing == null) return mid;
+      const t = Math.max(-1, Math.min(1, d.swing / 12));
+      return t >= 0 ? mix(mid, gain, t) : mix(mid, loss, -t);
+    }
+    return mix(soft, fuel, gHi === gLo ? 0.5 : (d.gas_chg_2y - gLo) / (gHi - gLo));
+  };
+  const ink = (d) => {
+    const strong = metric === "swing" ? d && d.swing != null && Math.abs(d.swing) > 7 : d && (d.gas_chg_2y - gLo) / (gHi - gLo) > 0.6;
+    return strong ? surface : css("--fg");
+  };
+  for (const [s, [c, r]] of Object.entries(TILES)) {
+    const d = byS[s], g = el("g", { class: "tile" }, svg);
+    const x = ox + c * (S + G), yy = oy + r * (S + G);
+    el("rect", { x, y: yy, width: S, height: S, rx: 3, fill: color(d) }, g);
+    el("text", { x: x + S / 2, y: yy + S / 2 - 2, fill: ink(d) }, g).textContent = s;
+    const v = metric === "swing" ? (d && d.swing != null ? fmt(d.swing, 0, true) : "n/a") : (d ? fmt(d.gas_chg_2y, 0, true) + "%" : "");
+    el("text", { x: x + S / 2, y: yy + S / 2 + 12, fill: ink(d), style: "font-size:9px;opacity:.85" }, g).textContent = v;
+    const hit = el("rect", { x, y: yy, width: S, height: S, class: "hit" }, svg);
+    hit.addEventListener("pointermove", (e) => showTip(e, `<b>${s} · ${year}</b>` +
+      row("Swing", d && d.swing != null ? fmt(d.swing, 1, true) + " pts" : "no contested races") +
+      row("Gas, 2 yr", d ? fmt(d.gas_chg_2y, 1, true) + "%" : "–") +
+      row("vs. U.S. avg", d ? fmt(d.gas_chg_2y_rel, 1, true) + " pts" : "–") +
+      row("Unemp. chg", d ? fmt(d.unemp_chg_2y, 1, true) : "–") + row("Districts", d ? d.n_districts : "–")));
+    hit.addEventListener("pointerleave", hideTip);
+  }
+  $("#mapLegend").innerHTML = metric === "swing"
+    ? `<span class="num">−12</span><i class="ramp" style="background:linear-gradient(90deg,var(--loss),var(--mid),var(--gain))"></i><span class="num">+12 pts</span><span>Orange: swung against ${nat.president}'s party · Teal: toward it</span>`
+    : `<span class="num">${fmt(gLo, 0, true)}%</span><i class="ramp" style="background:linear-gradient(90deg,var(--fuel-soft),var(--fuel))"></i><span class="num">${fmt(gHi, 0, true)}%</span><span>Real gas price change, ${year - 2}–${year}</span>`;
+
+  // within-year scatter: relative gas change vs relative swing
+  const sc = $("#stScatter"); sc.innerHTML = "";
+  const W = 460, H = 380, m = { t: 14, r: 14, b: 48, l: 50 };
+  const pts = rows.filter(d => d.swing != null && d.gas_chg_2y_rel != null);
+  const meanSwing = pts.reduce((a, d) => a + d.swing * d.n_districts, 0) / pts.reduce((a, d) => a + d.n_districts, 0);
+  const P = pts.map(d => ({ ...d, sx: d.gas_chg_2y_rel, sy: Math.max(-25, Math.min(25, d.swing - meanSwing)) }));
+  const xr = niceTicks(Math.min(...P.map(d => d.sx)), Math.max(...P.map(d => d.sx)), 5);
+  const yr = niceTicks(Math.min(...P.map(d => d.sy)), Math.max(...P.map(d => d.sy)), 5);
+  const x = scale(xr.lo, xr.hi, m.l, W - m.r), y = scale(yr.lo, yr.hi, H - m.b, m.t);
+  axes(sc, x, y, xr.ticks, yr.ticks, W, H, m, "Gas change vs. U.S. average (pts)", "Swing vs. U.S. average (pts)");
+  const f = fit(P.map(d => d.sx), P.map(d => d.sy), P.map(d => d.n_districts));
+  el("line", { x1: x(xr.lo), y1: y(f.a + f.b * xr.lo), x2: x(xr.hi), y2: y(f.a + f.b * xr.hi), class: "fit" }, sc);
+  P.sort((a, b) => b.n_districts - a.n_districts).forEach(d => {
+    const r = 4 + Math.sqrt(d.n_districts) * 1.6;
+    el("circle", { cx: x(d.sx), cy: y(d.sy), r, fill: partyColor(d.pres_party), "fill-opacity": 0.55, class: "dot" }, sc);
+    if (d.n_districts >= 18) el("text", { x: x(d.sx), y: y(d.sy) + 3.5, "text-anchor": "middle", class: "lbl", style: "font-size:9.5px" }, sc).textContent = d.state;
+    const hit = el("circle", { cx: x(d.sx), cy: y(d.sy), r: Math.max(r, 9), class: "hit" }, sc);
+    hit.addEventListener("pointermove", (e) => showTip(e, `<b>${d.state} · ${year}</b>` + row("Swing", fmt(d.swing, 1, true) + " pts") +
+      row("Gas vs. avg", fmt(d.sx, 1, true) + " pts") + row("Districts", d.n_districts)));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+  const dir = f.b < 0 ? "more against" : "less against";
+  $("#stCaption").innerHTML = `${year}, ${nat.president}: states where gas rose 5 points more than average swung <span class="num">${fmt(Math.abs(f.b * 5), 1)}</span> pts ${dir} the president's party (weighted fit, r = <span class="num">${fmt(f.r, 2)}</span>). Dot size = number of House districts.`;
+}
+
+/* ---------- coefficient plot ---------- */
+(function coef() {
+  const svg = $("#coef");
+  const rows = [];
+  rows.push({ grp: "NATIONAL · 12 MIDTERMS" });
+  DATA.national_models.forEach(m => rows.push({ name: m.model, c: m.coefs.gas_chg_2y, n: m.n }));
+  rows.push({ grp: "STATE PANEL · STATE × MIDTERM" });
+  DATA.state_models.forEach(m => rows.push({ name: m.model, c: m.coefs.gas_chg_2y, n: m.n }));
+  const W = 900, rowH = 36, m = { t: 10, r: 40, b: 46, l: 230 };
+  const H = m.t + rows.length * rowH + m.b;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const lo = Math.min(...rows.filter(r => r.c).map(r => (r.c.b - 1.96 * r.c.se) * 20));
+  const hi = Math.max(...rows.filter(r => r.c).map(r => (r.c.b + 1.96 * r.c.se) * 20));
+  const xr = niceTicks(Math.min(lo, -1), Math.max(hi, 1), 8);
+  const x = scale(xr.lo, xr.hi, m.l, W - m.r);
+  xr.ticks.forEach(v => { el("line", { x1: x(v), x2: x(v), y1: m.t, y2: H - m.b, class: v === 0 ? "zero" : "gridline" }, svg);
+    el("text", { x: x(v), y: H - m.b + 18, "text-anchor": "middle" }, svg).textContent = fmt(v, 0, true); });
+  el("text", { x: (m.l + W - m.r) / 2, y: H - 6, "text-anchor": "middle", class: "axis-title" }, svg).textContent = "Swing (pts) per 20% real gas rise · 95% CI";
+  el("text", { x: x(0) - 8, y: m.t + 12, "text-anchor": "end", class: "axis-title" }, svg).textContent = "← hurts president";
+  el("text", { x: x(0) + 8, y: m.t + 12, "text-anchor": "start", class: "axis-title" }, svg).textContent = "helps president →";
+  const ink = css("--fg");
+  rows.forEach((r, i) => {
+    const cy = m.t + i * rowH + rowH / 2 + 8;
+    if (r.grp) { el("text", { x: 8, y: cy + 4, class: "grp" }, svg).textContent = r.grp; return; }
+    el("text", { x: 20, y: cy + 4, class: "rowlbl" }, svg).textContent = r.name;
+    const b = r.c.b * 20, e = 1.96 * r.c.se * 20;
+    el("line", { x1: x(b - e), x2: x(b + e), y1: cy, y2: cy, stroke: ink, "stroke-width": 2, "stroke-linecap": "round" }, svg);
+    const sig = r.c.p < 0.05;
+    el("circle", { cx: x(b), cy, r: 6, fill: sig ? "var(--fuel)" : "var(--surface)", stroke: "var(--fuel)", "stroke-width": 2.5 }, svg);
+    const hit = el("rect", { x: m.l, y: cy - rowH / 2, width: W - m.l - m.r, height: rowH, class: "hit" }, svg);
+    hit.addEventListener("pointermove", (ev) => showTip(ev, `<b>${r.name}</b>` + row("Effect", fmt(b, 2, true) + " pts") +
+      row("95% CI", `${fmt(b - e, 2)} to ${fmt(b + e, 2)}`) + row("p-value", r.c.p.toFixed(3)) + row("n", r.n)));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+  const lg = el("g", {}, svg);
+})();
+
+/* ---------- 2026 forecast ---------- */
+(function forecast() {
+  const F = DATA.forecast, S = DATA.score;
+  if (!F) return;
+  $("#s2026").hidden = false;
+  const made = new Date(F.made_at);
+  $("#fcStamp").textContent = `Forecast locked ${made.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}, before polls opened`;
+  const A = F.models.A_approval_only.central, B = F.models.B_gas_plus_approval.central;
+  $("#fcLead").innerHTML = `With Trump's approval near <span class="num">${F.inputs.approval.toFixed(0)}%</span> and real gas prices up <span class="num">${fmt(F.inputs.gas_chg_2y, 0, true)}%</span> since 2024 (<span class="num">$${F.inputs.gas_price_oct.toFixed(2)}</span> in October), the 1978–2022 models expect Republicans to lose about <span class="num">${Math.abs(A.mean).toFixed(1)}</span> points of House vote share and fall to about <span class="num">${Math.round(F.seats.rep_seats)}</span> seats, short of a majority. Adding gas prices to the model makes the predicted loss <i>smaller</i>, not larger.`;
+
+  function rangeChart(svgId, rows, lo, hi, ticks, unit, refLine) {
+    const svg = $(svgId), W = 560, H = 170, m = { t: 18, r: 20, b: 34, l: 150 };
+    const x = scale(lo, hi, m.l, W - m.r), rowH = (H - m.t - m.b) / rows.length;
+    ticks.forEach(v => { el("line", { x1: x(v), x2: x(v), y1: m.t - 6, y2: H - m.b, class: v === 0 ? "zero" : "gridline" }, svg);
+      el("text", { x: x(v), y: H - m.b + 18, "text-anchor": "middle" }, svg).textContent = unit === "pts" ? fmt(v, 0, true) : v; });
+    if (refLine != null) {
+      el("line", { x1: x(refLine), x2: x(refLine), y1: m.t - 10, y2: H - m.b, stroke: "var(--fg)", "stroke-width": 1.5, "stroke-dasharray": "3 3" }, svg);
+      el("text", { x: x(refLine) + 5, y: m.t - 2, class: "lbl" }, svg).textContent = "218 majority";
+    }
+    rows.forEach((r, i) => {
+      const cy = m.t + rowH * i + rowH / 2;
+      el("text", { x: 0, y: cy + 4, class: "rowlbl", style: "fill:var(--fg);font-family:var(--font-body);font-size:12.5px" }, svg).textContent = r.name;
+      el("line", { x1: x(r.lo), x2: x(r.hi), y1: cy, y2: cy, stroke: "var(--rep)", "stroke-width": 10, "stroke-linecap": "round", opacity: 0.3 }, svg);
+      el("circle", { cx: x(r.mid), cy, r: 6.5, fill: "var(--rep)", class: "dot" }, svg);
+      el("text", { x: x(r.mid), y: cy - 12, "text-anchor": "middle", class: "lbl" }, svg).textContent = unit === "pts" ? fmt(r.mid, 1, true) : Math.round(r.mid);
+      if (r.actual != null) {
+        const ax = x(r.actual);
+        el("path", { d: `M${ax} ${cy - 8} L${ax + 8} ${cy} L${ax} ${cy + 8} L${ax - 8} ${cy} Z`, fill: "var(--fg)", stroke: "var(--surface)", "stroke-width": 1.5 }, svg);
+      }
+      const hit = el("rect", { x: m.l, y: cy - rowH / 2, width: W - m.l - m.r, height: rowH, class: "hit" }, svg);
+      hit.addEventListener("pointermove", (e) => showTip(e, `<b>${r.name}</b>` + row("Forecast", unit === "pts" ? fmt(r.mid, 2, true) + " pts" : Math.round(r.mid)) +
+        row("80% range", unit === "pts" ? `${fmt(r.lo, 1, true)} to ${fmt(r.hi, 1, true)}` : `${Math.round(r.lo)}–${Math.round(r.hi)}`) +
+        (r.actual != null ? row("Actual (prelim.)", unit === "pts" ? fmt(r.actual, 2, true) : r.actual) : "")));
+      hit.addEventListener("pointerleave", hideTip);
+    });
+  }
+  const act = S ? S.actual_swing : null;
+  const swingRows = [
+    { name: "Approval only", mid: A.mean, lo: A.lo80, hi: A.hi80, actual: act },
+    { name: "Gas + approval", mid: B.mean, lo: B.lo80, hi: B.hi80, actual: act },
+  ];
+  const sLo = Math.floor(Math.min(-8, ...swingRows.map(r => r.lo), act ?? 0) / 2) * 2, sHi = Math.ceil(Math.max(1, ...swingRows.map(r => r.hi), act ?? 0) / 2) * 2;
+  const sT = []; for (let v = sLo; v <= sHi; v += 2) sT.push(v);
+  rangeChart("#fcSwing", swingRows, sLo, sHi, sT, "pts");
+  const seatRows = [{ name: "Approval model", mid: F.seats.rep_seats, lo: F.seats.rep_seats_lo80, hi: F.seats.rep_seats_hi80, actual: S ? S.rep_seats_won : null }];
+  rangeChart("#fcSeats", seatRows, 140, 240, [140, 160, 180, 200, 220, 240], "seats", 218);
+
+  if (S) {
+    const err = S.models.A_approval_only.error;
+    $("#fcActualLbl").textContent = `Preliminary result as of ${S.as_of}`;
+    $("#fcNotes").innerHTML = `<b>Scored (preliminary, ${S.as_of}):</b> actual Republican swing <span class="num">${fmt(S.actual_swing, 2, true)}</span> pts; approval model missed by <span class="num">${fmt(err, 2, true)}</span> pts. Republicans have won <span class="num">${S.rep_seats_won}</span> seats with <span class="num">${S.seats_uncalled}</span> uncalled. Adding gas ${S.gas_helped ? "improved" : "did not improve"} the forecast. Source: ${S.source}. Counts continue for weeks, so these numbers will change.`;
+  } else {
+    $("#fcNotes").textContent = F.warnings.join(" ");
+  }
+})();
+
+/* ---------- table ---------- */
+(function table() {
+  const cols = [["year", "Year", 0], ["president", "President"], ["swing", "Swing (pts)", 1, true], ["seat_change", "Seats", 0, true],
+    ["approval", "Approval %", 0], ["gas_price_oct", "Pump, Oct ($)", 2], ["gas_chg_2y", "Gas 2-yr %", 1, true],
+    ["inflation_1y", "Inflation %", 1], ["unemp_chg_2y", "Unemp. chg", 1, true]];
+  $("#natTable").innerHTML = "<thead><tr>" + cols.map(c => `<th scope="col">${c[1]}</th>`).join("") + "</tr></thead><tbody>" +
+    NAT.map(d => "<tr>" + cols.map(c => `<td>${c[2] === undefined ? d[c[0]] + ` (${d.pres_party})` : c[0] === "year" ? d.year : fmt(d[c[0]], c[2], c[3])}</td>`).join("") + "</tr>").join("") + "</tbody>";
+})();
+
+drawNat(); drawState();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawState);
+new MutationObserver(drawState).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>

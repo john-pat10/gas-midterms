@@ -1,0 +1,9 @@
+variable,value,as_of,source
+approval,38.0,2026-11-03,"PollCheck polling average (Gallup ended its approval series in Feb 2026; last Gallup reading 36% in Dec 2025) https://www.pollcheck.co.uk/us-midterms-2026/approval"
+approval_low,34.0,2026-11-03,"Low end of October 2026 polls excluding outliers (NYT/Siena 34, NBC 34)"
+approval_high,41.0,2026-11-03,"High end of October 2026 polls (Morning Consult 41, TIPP 41)"
+gas_oct_2026,4.3095,2026-10-26,"EIA weekly U.S. regular retail gasoline, mean of October 2026 weeks"
+gas_oct_2024,3.1370,2024-10-28,"EIA weekly U.S. regular retail gasoline, mean of October 2024 weeks"
+cpi_latest,336.940,2026-09,"BLS CPI-U (Oct 2026 not yet released)"
+cpi_two_years_earlier,315.301,2024-09,"BLS CPI-U, same month two years earlier"
+cpi_one_year_earlier,324.800,2025-09,"BLS CPI-U"
