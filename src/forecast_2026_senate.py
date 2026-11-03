@@ -34,13 +34,18 @@ R_NOT_UP, D_NOT_UP = 31, 34   # D includes King (ME) and Sanders (VT), who caucu
 
 
 def main():
+    import sys
+    target = REPORTS / "forecast_senate_2026.json"
+    if target.exists() and "--force" not in sys.argv:
+        print(f"Forecast already locked in {target}; not overwriting (use --force).")
+        return
     house = json.loads((REPORTS / "forecast_2026.json").read_text(encoding="utf-8"))
     races = pd.read_csv(ROOT / "data/manual/senate_2026_races.csv")
     races["r_base"] = 100 * races.trump_2024_pct / (races.trump_2024_pct + races.harris_2024_pct)
 
     rng = np.random.default_rng(2026)
     out = {"made_at": datetime.now().astimezone().isoformat(timespec="minutes"),
-           "timing_note": "Made on election day around 4:30 PM MST, after the first polls closed "
+           "timing_note": "Made on election day (see made_at), just after the first polls closed "
                           "(6 PM ET) but before any results were viewed. Inputs come from "
                           "pre-election knowledge only.",
            "method": __doc__.strip(), "state_sd_assumption": STATE_SD,

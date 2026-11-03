@@ -74,6 +74,32 @@ expect a Republican House swing of about −4 points and roughly 183 Republican 
 (80% range 156–210), short of a majority. `src/score_2026.py` scores the forecast once
 results are entered in `data/manual/results_2026_prelim.csv`.
 
+### Senate forecast
+
+Made on election day at 4:07 PM MST (6:07 PM ET), just after the first polls closed and
+before any results were viewed. Saved in
+[`reports/forecast_senate_2026.json`](reports/forecast_senate_2026.json).
+
+It's a **fundamentals-only** model with no polls and no candidate information. Each state's
+2024 presidential vote serves as its baseline. Every state is shifted by the national swing
+from the House models, and the model simulates 100,000 elections with a shared national error
+plus a 5-point state error. The 5 points is an assumption covering candidates and incumbency.
+
+| | Model A (approval) | Model B (gas + approval) |
+|---|---|---|
+| Republican seats (median) | 50 | 51 |
+| 80% range | 46–54 | 47–54 |
+| Chance Republicans keep control | 60% | 70% |
+
+Republicans start with 53 seats and keep control at 50 because the Vice President breaks ties.
+The model's most likely Democratic pickups are North Carolina and Maine.
+
+Caveat: live data sources were unreachable on election day, so the 2024 state results and the
+2026 seat list in [`data/manual/senate_2026_races.csv`](data/manual/senate_2026_races.csv) were
+entered from pre-election knowledge and should be checked against official sources.
+`src/score_2026_senate.py` scores the forecast race by race once results are entered in
+`data/manual/senate_results_2026.csv`.
+
 ## Interactive dashboard
 
 `dashboard/index.html` is a single self-contained file. Open it in a browser, or

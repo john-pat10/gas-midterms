@@ -1,6 +1,6 @@
 {
   "made_at": "2026-11-03T16:07-07:00",
-  "timing_note": "Made on election day around 4:30 PM MST, after the first polls closed (6 PM ET) but before any results were viewed. Inputs come from pre-election knowledge only.",
+  "timing_note": "Made on election day (see made_at), just after the first polls closed (6 PM ET) but before any results were viewed. Inputs come from pre-election knowledge only.",
   "method": "Pre-election 2026 Senate forecast: a \"fundamentals only\" model.\n\nIdea: take each state's 2024 presidential vote as its baseline lean, shift every\nstate by the national swing our House models predict, then add uncertainty.\nNo polls and no candidate information are used, so this tests how far the\nnational environment alone gets you in the Senate.\n\n  predicted R share in state = Trump 2024 two-party share + predicted national swing\n\nUncertainty (simulated 100,000 times):\n  - national error: one shared draw per simulation, SD taken from the House\n    model's own 80% interval (every race moves together)\n  - state error: independent per race, SD = 5 points (an assumption covering\n    candidates, incumbency and local issues; NOT estimated from our data)\n\nInputs entered from Claude's pre-election knowledge (through mid-2026) because\nlive sources were unreachable on election day; see data/manual/senate_2026_races.csv.",
   "state_sd_assumption": 5.0,
   "seats_not_up": {

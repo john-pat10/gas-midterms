@@ -51,6 +51,10 @@ def baseline_2024() -> dict:
 
 
 def main() -> None:
+    import sys
+    if OUT_JSON.exists() and "--force" not in sys.argv:
+        print(f"Forecast already locked in {OUT_JSON}; not overwriting (use --force).")
+        return
     nat = pd.read_csv(PROC / "national.csv")
     x = inputs()
     base = baseline_2024()
