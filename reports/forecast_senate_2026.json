@@ -1,0 +1,387 @@
+{
+  "made_at": "2026-11-03T16:07-07:00",
+  "timing_note": "Made on election day around 4:30 PM MST, after the first polls closed (6 PM ET) but before any results were viewed. Inputs come from pre-election knowledge only.",
+  "method": "Pre-election 2026 Senate forecast: a \"fundamentals only\" model.\n\nIdea: take each state's 2024 presidential vote as its baseline lean, shift every\nstate by the national swing our House models predict, then add uncertainty.\nNo polls and no candidate information are used, so this tests how far the\nnational environment alone gets you in the Senate.\n\n  predicted R share in state = Trump 2024 two-party share + predicted national swing\n\nUncertainty (simulated 100,000 times):\n  - national error: one shared draw per simulation, SD taken from the House\n    model's own 80% interval (every race moves together)\n  - state error: independent per race, SD = 5 points (an assumption covering\n    candidates, incumbency and local issues; NOT estimated from our data)\n\nInputs entered from Claude's pre-election knowledge (through mid-2026) because\nlive sources were unreachable on election day; see data/manual/senate_2026_races.csv.",
+  "state_sd_assumption": 5.0,
+  "seats_not_up": {
+    "R": 31,
+    "D_and_caucus": 34
+  },
+  "control_rule": "Republicans keep control with 50+ seats (VP Vance breaks ties); Democrats need 51.",
+  "models": {
+    "A_approval_only": {
+      "national_swing": -3.9814950612265285,
+      "national_sd": 2.237865790282786,
+      "rep_seats_mean": 50.199,
+      "rep_seats_median": 50,
+      "rep_seats_lo80": 46,
+      "rep_seats_hi80": 54,
+      "p_rep_control": 0.59962,
+      "p_dem_control": 0.40038,
+      "races": {
+        "AL": {
+          "pred_rep_share": 61.47,
+          "p_rep_win": 0.982,
+          "holding": "R"
+        },
+        "AK": {
+          "pred_rep_share": 52.85,
+          "p_rep_win": 0.698,
+          "holding": "R"
+        },
+        "AR": {
+          "pred_rep_share": 61.66,
+          "p_rep_win": 0.984,
+          "holding": "R"
+        },
+        "CO": {
+          "pred_rep_share": 40.31,
+          "p_rep_win": 0.038,
+          "holding": "D"
+        },
+        "DE": {
+          "pred_rep_share": 38.56,
+          "p_rep_win": 0.019,
+          "holding": "D"
+        },
+        "FL": {
+          "pred_rep_share": 52.63,
+          "p_rep_win": 0.684,
+          "holding": "R"
+        },
+        "GA": {
+          "pred_rep_share": 47.13,
+          "p_rep_win": 0.3,
+          "holding": "D"
+        },
+        "ID": {
+          "pred_rep_share": 64.77,
+          "p_rep_win": 0.996,
+          "holding": "R"
+        },
+        "IL": {
+          "pred_rep_share": 40.45,
+          "p_rep_win": 0.041,
+          "holding": "D"
+        },
+        "IA": {
+          "pred_rep_share": 52.74,
+          "p_rep_win": 0.692,
+          "holding": "R"
+        },
+        "KS": {
+          "pred_rep_share": 54.27,
+          "p_rep_win": 0.782,
+          "holding": "R"
+        },
+        "KY": {
+          "pred_rep_share": 61.57,
+          "p_rep_win": 0.983,
+          "holding": "R"
+        },
+        "LA": {
+          "pred_rep_share": 57.2,
+          "p_rep_win": 0.905,
+          "holding": "R"
+        },
+        "ME": {
+          "pred_rep_share": 42.49,
+          "p_rep_win": 0.086,
+          "holding": "R"
+        },
+        "MA": {
+          "pred_rep_share": 33.06,
+          "p_rep_win": 0.001,
+          "holding": "D"
+        },
+        "MI": {
+          "pred_rep_share": 46.73,
+          "p_rep_win": 0.275,
+          "holding": "D"
+        },
+        "MN": {
+          "pred_rep_share": 43.87,
+          "p_rep_win": 0.131,
+          "holding": "D"
+        },
+        "MS": {
+          "pred_rep_share": 57.6,
+          "p_rep_win": 0.919,
+          "holding": "R"
+        },
+        "MT": {
+          "pred_rep_share": 56.29,
+          "p_rep_win": 0.873,
+          "holding": "R"
+        },
+        "NE": {
+          "pred_rep_share": 56.41,
+          "p_rep_win": 0.877,
+          "holding": "R"
+        },
+        "NH": {
+          "pred_rep_share": 44.6,
+          "p_rep_win": 0.162,
+          "holding": "D"
+        },
+        "NJ": {
+          "pred_rep_share": 43.01,
+          "p_rep_win": 0.101,
+          "holding": "D"
+        },
+        "NM": {
+          "pred_rep_share": 42.95,
+          "p_rep_win": 0.1,
+          "holding": "D"
+        },
+        "NC": {
+          "pred_rep_share": 47.64,
+          "p_rep_win": 0.332,
+          "holding": "R"
+        },
+        "OH": {
+          "pred_rep_share": 51.68,
+          "p_rep_win": 0.62,
+          "holding": "R"
+        },
+        "OK": {
+          "pred_rep_share": 63.5,
+          "p_rep_win": 0.994,
+          "holding": "R"
+        },
+        "OR": {
+          "pred_rep_share": 38.59,
+          "p_rep_win": 0.02,
+          "holding": "D"
+        },
+        "RI": {
+          "pred_rep_share": 38.98,
+          "p_rep_win": 0.022,
+          "holding": "D"
+        },
+        "SC": {
+          "pred_rep_share": 55.04,
+          "p_rep_win": 0.822,
+          "holding": "R"
+        },
+        "SD": {
+          "pred_rep_share": 60.98,
+          "p_rep_win": 0.977,
+          "holding": "R"
+        },
+        "TN": {
+          "pred_rep_share": 61.06,
+          "p_rep_win": 0.978,
+          "holding": "R"
+        },
+        "TX": {
+          "pred_rep_share": 52.92,
+          "p_rep_win": 0.702,
+          "holding": "R"
+        },
+        "VA": {
+          "pred_rep_share": 43.11,
+          "p_rep_win": 0.105,
+          "holding": "D"
+        },
+        "WV": {
+          "pred_rep_share": 67.37,
+          "p_rep_win": 0.999,
+          "holding": "R"
+        },
+        "WY": {
+          "pred_rep_share": 69.53,
+          "p_rep_win": 1.0,
+          "holding": "R"
+        }
+      }
+    },
+    "B_gas_plus_approval": {
+      "national_swing": -3.303485835619715,
+      "national_sd": 2.008960939744594,
+      "rep_seats_mean": 50.91151,
+      "rep_seats_median": 51,
+      "rep_seats_lo80": 47,
+      "rep_seats_hi80": 54,
+      "p_rep_control": 0.70203,
+      "p_dem_control": 0.29797,
+      "races": {
+        "AL": {
+          "pred_rep_share": 62.15,
+          "p_rep_win": 0.988,
+          "holding": "R"
+        },
+        "AK": {
+          "pred_rep_share": 53.53,
+          "p_rep_win": 0.742,
+          "holding": "R"
+        },
+        "AR": {
+          "pred_rep_share": 62.34,
+          "p_rep_win": 0.988,
+          "holding": "R"
+        },
+        "CO": {
+          "pred_rep_share": 40.99,
+          "p_rep_win": 0.047,
+          "holding": "D"
+        },
+        "DE": {
+          "pred_rep_share": 39.23,
+          "p_rep_win": 0.023,
+          "holding": "D"
+        },
+        "FL": {
+          "pred_rep_share": 53.31,
+          "p_rep_win": 0.729,
+          "holding": "R"
+        },
+        "GA": {
+          "pred_rep_share": 47.81,
+          "p_rep_win": 0.34,
+          "holding": "D"
+        },
+        "ID": {
+          "pred_rep_share": 65.45,
+          "p_rep_win": 0.998,
+          "holding": "R"
+        },
+        "IL": {
+          "pred_rep_share": 41.13,
+          "p_rep_win": 0.049,
+          "holding": "D"
+        },
+        "IA": {
+          "pred_rep_share": 53.42,
+          "p_rep_win": 0.737,
+          "holding": "R"
+        },
+        "KS": {
+          "pred_rep_share": 54.94,
+          "p_rep_win": 0.821,
+          "holding": "R"
+        },
+        "KY": {
+          "pred_rep_share": 62.25,
+          "p_rep_win": 0.988,
+          "holding": "R"
+        },
+        "LA": {
+          "pred_rep_share": 57.88,
+          "p_rep_win": 0.927,
+          "holding": "R"
+        },
+        "ME": {
+          "pred_rep_share": 43.17,
+          "p_rep_win": 0.102,
+          "holding": "R"
+        },
+        "MA": {
+          "pred_rep_share": 33.73,
+          "p_rep_win": 0.002,
+          "holding": "D"
+        },
+        "MI": {
+          "pred_rep_share": 47.41,
+          "p_rep_win": 0.315,
+          "holding": "D"
+        },
+        "MN": {
+          "pred_rep_share": 44.54,
+          "p_rep_win": 0.156,
+          "holding": "D"
+        },
+        "MS": {
+          "pred_rep_share": 58.27,
+          "p_rep_win": 0.937,
+          "holding": "R"
+        },
+        "MT": {
+          "pred_rep_share": 56.96,
+          "p_rep_win": 0.901,
+          "holding": "R"
+        },
+        "NE": {
+          "pred_rep_share": 57.08,
+          "p_rep_win": 0.907,
+          "holding": "R"
+        },
+        "NH": {
+          "pred_rep_share": 45.28,
+          "p_rep_win": 0.19,
+          "holding": "D"
+        },
+        "NJ": {
+          "pred_rep_share": 43.69,
+          "p_rep_win": 0.119,
+          "holding": "D"
+        },
+        "NM": {
+          "pred_rep_share": 43.63,
+          "p_rep_win": 0.118,
+          "holding": "D"
+        },
+        "NC": {
+          "pred_rep_share": 48.32,
+          "p_rep_win": 0.377,
+          "holding": "R"
+        },
+        "OH": {
+          "pred_rep_share": 52.35,
+          "p_rep_win": 0.67,
+          "holding": "R"
+        },
+        "OK": {
+          "pred_rep_share": 64.18,
+          "p_rep_win": 0.996,
+          "holding": "R"
+        },
+        "OR": {
+          "pred_rep_share": 39.27,
+          "p_rep_win": 0.024,
+          "holding": "D"
+        },
+        "RI": {
+          "pred_rep_share": 39.66,
+          "p_rep_win": 0.027,
+          "holding": "D"
+        },
+        "SC": {
+          "pred_rep_share": 55.72,
+          "p_rep_win": 0.855,
+          "holding": "R"
+        },
+        "SD": {
+          "pred_rep_share": 61.66,
+          "p_rep_win": 0.985,
+          "holding": "R"
+        },
+        "TN": {
+          "pred_rep_share": 61.74,
+          "p_rep_win": 0.985,
+          "holding": "R"
+        },
+        "TX": {
+          "pred_rep_share": 53.59,
+          "p_rep_win": 0.746,
+          "holding": "R"
+        },
+        "VA": {
+          "pred_rep_share": 43.79,
+          "p_rep_win": 0.122,
+          "holding": "D"
+        },
+        "WV": {
+          "pred_rep_share": 68.05,
+          "p_rep_win": 1.0,
+          "holding": "R"
+        },
+        "WY": {
+          "pred_rep_share": 70.21,
+          "p_rep_win": 1.0,
+          "holding": "R"
+        }
+      }
+    }
+  }
+}
